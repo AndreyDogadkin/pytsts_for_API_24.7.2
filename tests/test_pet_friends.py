@@ -1,5 +1,4 @@
 import pytest
-
 from api import PetFriends
 from settings import valid_email, valid_password, not_valid_password, not_valid_email
 import os
@@ -22,12 +21,14 @@ NEGATIVE_PARAMS = [
 
 
 def test_get_api_key(email=valid_email, password=valid_password):
+    """Для проверки возможности получения ключа."""
     status, result = pf.get_api_key(email, password)
     assert status == 200
     assert 'key' in result
 
 
 def test_get_pets_list_all(filter=''):
+    """Для проверки возможности получения списка питомцев."""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     status, result = pf.get_list_of_pets(auth_key, filter)
     assert status == 200
@@ -36,6 +37,7 @@ def test_get_pets_list_all(filter=''):
 
 def test_add_new_pet_with_valid_data(name='Пэс', animal_type='Пэсшнауцер',
                                      age='4', pet_photo='images/dog.jpg'):
+    """Для проверки возможности добавления нового питомца с фото."""
     pet_photo = os.path.join(os.path.dirname(__file__), pet_photo)
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     status, result = pf.add_new_pet(auth_key, name, animal_type, age, pet_photo)
@@ -49,6 +51,7 @@ def test_add_new_pet_with_valid_data(name='Пэс', animal_type='Пэсшнау�
     ('Rubi', 'CAT', 7)
 ])
 def test_successful_update_self_pet_info(name, animal_type, age):
+    """Для проверки обновления данных питомца."""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     _, my_pets = pf.get_list_of_pets(auth_key, "my_pets")
     if len(my_pets['pets']) > 0:
@@ -65,6 +68,8 @@ def test_successful_update_self_pet_info(name, animal_type, age):
     ('Radjy', 'Собака', 7)
 ])
 def test_successful_add_pet_without_photo(name, animal_type, age):
+    """Для проверки возможности создания новых питомцев
+    с корректными данными."""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
     assert status == 200
@@ -72,6 +77,8 @@ def test_successful_add_pet_without_photo(name, animal_type, age):
 
 
 def test_successful_set_photo(pet_photo='images/dog.jpg'):
+    """Для проверки возможности изменения фото
+    у существующего питомца."""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     _, my_pets = pf.get_list_of_pets(auth_key, "my_pets")
     pet_photo = os.path.join(os.path.dirname(__file__), pet_photo)
@@ -84,6 +91,7 @@ def test_successful_set_photo(pet_photo='images/dog.jpg'):
 
 
 def test_successful_delete_self_pet():
+    """Для проверки возможности удаления питомца."""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     _, my_pets = pf.get_list_of_pets(auth_key, "my_pets")
     if len(my_pets['pets']) == 0:
@@ -98,6 +106,8 @@ def test_successful_delete_self_pet():
 
 @pytest.mark.parametrize('name, animal_type, age', NEGATIVE_PARAMS)
 def test_negative_add_pet_without_photo(name, animal_type, age):
+    """Для проверки невозможности создания питомца с некорректно
+    заполненными данными."""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
     assert status == 400
@@ -105,12 +115,16 @@ def test_negative_add_pet_without_photo(name, animal_type, age):
 
 
 def test_negative_get_api_key(email=not_valid_email, password=not_valid_password):
+    """Для проверки получения невозможности получения ключа
+    с невалидными данными."""
     status, result = pf.get_api_key(email, password)
     assert status == 403
     assert 'key' not in result
 
 
 def test_negative_get_pets_list_all(filter=''):
+    """Для проверки невозможности получения списка питомцев
+     с использованием невалидного ключа."""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     auth_key['key'] += '1'
     status, result = pf.get_list_of_pets(auth_key, filter)
@@ -119,6 +133,7 @@ def test_negative_get_pets_list_all(filter=''):
 
 @pytest.mark.parametrize('name, animal_type, age', NEGATIVE_PARAMS)
 def test_negative_update_self_pet_info(name, animal_type, age):
+    """Для проверки обновления данных питомца с негативными параметрами."""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
     _, my_pets = pf.get_list_of_pets(auth_key, "my_pets")
